@@ -6,19 +6,40 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
 const deployedContracts = {
   31337: {
-    YourContract: {
+    MultiBettingPool: {
       address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
       abi: [
+        {
+          inputs: [],
+          stateMutability: "nonpayable",
+          type: "constructor",
+        },
         {
           inputs: [
             {
               internalType: "address",
-              name: "_owner",
+              name: "owner",
               type: "address",
             },
           ],
-          stateMutability: "nonpayable",
-          type: "constructor",
+          name: "OwnableInvalidOwner",
+          type: "error",
+        },
+        {
+          inputs: [
+            {
+              internalType: "address",
+              name: "account",
+              type: "address",
+            },
+          ],
+          name: "OwnableUnauthorizedAccount",
+          type: "error",
+        },
+        {
+          inputs: [],
+          name: "ReentrancyGuardReentrantCall",
+          type: "error",
         },
         {
           anonymous: false,
@@ -26,39 +47,390 @@ const deployedContracts = {
             {
               indexed: true,
               internalType: "address",
-              name: "greetingSetter",
+              name: "previousOwner",
+              type: "address",
+            },
+            {
+              indexed: true,
+              internalType: "address",
+              name: "newOwner",
+              type: "address",
+            },
+          ],
+          name: "OwnershipTransferred",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "poolUuid",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "address",
+              name: "participant",
               type: "address",
             },
             {
               indexed: false,
-              internalType: "string",
-              name: "newGreeting",
-              type: "string",
-            },
-            {
-              indexed: false,
-              internalType: "bool",
-              name: "premium",
-              type: "bool",
+              internalType: "uint256",
+              name: "amount",
+              type: "uint256",
             },
             {
               indexed: false,
               internalType: "uint256",
-              name: "value",
+              name: "currentTokenPrice",
               type: "uint256",
             },
           ],
-          name: "GreetingChange",
+          name: "ParticipantEntered",
           type: "event",
         },
         {
-          inputs: [],
-          name: "greeting",
-          outputs: [
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "uuid",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "string",
+              name: "name",
+              type: "string",
+            },
+            {
+              indexed: false,
+              internalType: "address",
+              name: "rewardToken",
+              type: "address",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "entryAmount",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "startTime",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "endTime",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "basePrice",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "upperCircuitLimit",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "lowerCircuitLimit",
+              type: "uint256",
+            },
+            {
+              indexed: false,
+              internalType: "uint256",
+              name: "createdAtEpoch",
+              type: "uint256",
+            },
+          ],
+          name: "PoolCreated",
+          type: "event",
+        },
+        {
+          anonymous: false,
+          inputs: [
+            {
+              indexed: true,
+              internalType: "bytes32",
+              name: "poolUuid",
+              type: "bytes32",
+            },
+            {
+              indexed: false,
+              internalType: "address[]",
+              name: "recipients",
+              type: "address[]",
+            },
+            {
+              indexed: false,
+              internalType: "uint256[]",
+              name: "amounts",
+              type: "uint256[]",
+            },
+          ],
+          name: "PoolFundsWithdrawn",
+          type: "event",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_uuid",
+              type: "bytes32",
+            },
             {
               internalType: "string",
-              name: "",
+              name: "_name",
               type: "string",
+            },
+            {
+              internalType: "string",
+              name: "_rewardTokenName",
+              type: "string",
+            },
+            {
+              internalType: "address",
+              name: "_rewardToken",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "_entryAmount",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_startTime",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_endTime",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_basePrice",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_currentPriceOfToken",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_upperCircuitLimit",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "_lowerCircuitLimit",
+              type: "uint256",
+            },
+          ],
+          name: "createPool",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_poolUuid",
+              type: "bytes32",
+            },
+            {
+              internalType: "uint256",
+              name: "_currentTokenPrice",
+              type: "uint256",
+            },
+          ],
+          name: "enterPool",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
+        },
+        {
+          inputs: [],
+          name: "getAllPoolUuids",
+          outputs: [
+            {
+              internalType: "bytes32[]",
+              name: "",
+              type: "bytes32[]",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_uuid",
+              type: "bytes32",
+            },
+          ],
+          name: "getPool",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "bytes32",
+                  name: "uuid",
+                  type: "bytes32",
+                },
+                {
+                  internalType: "string",
+                  name: "name",
+                  type: "string",
+                },
+                {
+                  internalType: "string",
+                  name: "rewardTokenName",
+                  type: "string",
+                },
+                {
+                  internalType: "address",
+                  name: "rewardToken",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "entryAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "startTime",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "endTime",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "basePrice",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "currentPriceOfToken",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "upperCircuitLimit",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "lowerCircuitLimit",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "totalPoolAmount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "createdAtEpoch",
+                  type: "uint256",
+                },
+                {
+                  components: [
+                    {
+                      internalType: "address",
+                      name: "user",
+                      type: "address",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "amount",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "timestamp",
+                      type: "uint256",
+                    },
+                    {
+                      internalType: "uint256",
+                      name: "currentTokenPriceAtEntry",
+                      type: "uint256",
+                    },
+                  ],
+                  internalType: "struct MultiBettingPool.Participant[]",
+                  name: "participants",
+                  type: "tuple[]",
+                },
+                {
+                  internalType: "bool",
+                  name: "exists",
+                  type: "bool",
+                },
+              ],
+              internalType: "struct MultiBettingPool.PoolConfig",
+              name: "",
+              type: "tuple",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_poolUuid",
+              type: "bytes32",
+            },
+          ],
+          name: "getPoolParticipants",
+          outputs: [
+            {
+              components: [
+                {
+                  internalType: "address",
+                  name: "user",
+                  type: "address",
+                },
+                {
+                  internalType: "uint256",
+                  name: "amount",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "timestamp",
+                  type: "uint256",
+                },
+                {
+                  internalType: "uint256",
+                  name: "currentTokenPriceAtEntry",
+                  type: "uint256",
+                },
+              ],
+              internalType: "struct MultiBettingPool.Participant[]",
+              name: "",
+              type: "tuple[]",
             },
           ],
           stateMutability: "view",
@@ -78,12 +450,102 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [],
-          name: "premium",
+          inputs: [
+            {
+              internalType: "uint256",
+              name: "",
+              type: "uint256",
+            },
+          ],
+          name: "poolUuids",
           outputs: [
             {
-              internalType: "bool",
+              internalType: "bytes32",
               name: "",
+              type: "bytes32",
+            },
+          ],
+          stateMutability: "view",
+          type: "function",
+        },
+        {
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "",
+              type: "bytes32",
+            },
+          ],
+          name: "pools",
+          outputs: [
+            {
+              internalType: "bytes32",
+              name: "uuid",
+              type: "bytes32",
+            },
+            {
+              internalType: "string",
+              name: "name",
+              type: "string",
+            },
+            {
+              internalType: "string",
+              name: "rewardTokenName",
+              type: "string",
+            },
+            {
+              internalType: "address",
+              name: "rewardToken",
+              type: "address",
+            },
+            {
+              internalType: "uint256",
+              name: "entryAmount",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "startTime",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "endTime",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "basePrice",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "currentPriceOfToken",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "upperCircuitLimit",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "lowerCircuitLimit",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "totalPoolAmount",
+              type: "uint256",
+            },
+            {
+              internalType: "uint256",
+              name: "createdAtEpoch",
+              type: "uint256",
+            },
+            {
+              internalType: "bool",
+              name: "exists",
               type: "bool",
             },
           ],
@@ -91,63 +553,49 @@ const deployedContracts = {
           type: "function",
         },
         {
-          inputs: [
-            {
-              internalType: "string",
-              name: "_newGreeting",
-              type: "string",
-            },
-          ],
-          name: "setGreeting",
-          outputs: [],
-          stateMutability: "payable",
-          type: "function",
-        },
-        {
           inputs: [],
-          name: "totalCounter",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
+          name: "renounceOwnership",
+          outputs: [],
+          stateMutability: "nonpayable",
           type: "function",
         },
         {
           inputs: [
             {
               internalType: "address",
-              name: "",
+              name: "newOwner",
               type: "address",
             },
           ],
-          name: "userGreetingCounter",
-          outputs: [
-            {
-              internalType: "uint256",
-              name: "",
-              type: "uint256",
-            },
-          ],
-          stateMutability: "view",
-          type: "function",
-        },
-        {
-          inputs: [],
-          name: "withdraw",
+          name: "transferOwnership",
           outputs: [],
           stateMutability: "nonpayable",
           type: "function",
         },
         {
-          stateMutability: "payable",
-          type: "receive",
+          inputs: [
+            {
+              internalType: "bytes32",
+              name: "_poolUuid",
+              type: "bytes32",
+            },
+            {
+              internalType: "address[]",
+              name: "_recipients",
+              type: "address[]",
+            },
+          ],
+          name: "withdrawPoolFunds",
+          outputs: [],
+          stateMutability: "nonpayable",
+          type: "function",
         },
       ],
-      inheritedFunctions: {},
+      inheritedFunctions: {
+        owner: "@openzeppelin/contracts/access/Ownable.sol",
+        renounceOwnership: "@openzeppelin/contracts/access/Ownable.sol",
+        transferOwnership: "@openzeppelin/contracts/access/Ownable.sol",
+      },
     },
   },
 } as const;
